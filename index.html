@@ -37,45 +37,59 @@
         init() {
         }
         preload() {
-          for (let i = 0; i < 100; ++i) {
-            this.load.image("piece" + i, "img/piece" + i + ".png");
-          }
-          this.load.scenePlugin('rexgesturesplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexgesturesplugin.min.js', 'rexGestures', 'rexGestures');
+          this.load.image("original0", "img/original0.png");
+          this.load.image("original1", "img/original1.png");
+          this.load.image("original2", "img/original2.png");
         }
-        tap;
         create() {
-          this.tap = this.rexGestures.add.tap({tapInterval: 0});
-
           const canvas = this.sys.game.canvas;
-          this.add.rectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, "0xffffff");
+          const originalSize = 1920;
+          const scale = Math.min(canvas.width, canvas.height) / originalSize;
+          const effectiveSize = originalSize * scale;
+          const original0 = this.add.image(effectiveSize / 2 + (canvas.width - effectiveSize) / 2, effectiveSize / 2 + (canvas.height - effectiveSize) / 2, "original0").setScale(scale);
+          const original1 = this.add.image(effectiveSize / 2 + (canvas.width - effectiveSize) / 2, effectiveSize / 2 + (canvas.height - effectiveSize) / 2, "original1").setScale(scale).setVisible(false);
+          const original2 = this.add.image(effectiveSize / 2 + (canvas.width - effectiveSize) / 2, effectiveSize / 2 + (canvas.height - effectiveSize) / 2, "original2").setScale(scale).setVisible(false);
 
-          const title = "プリコネジグソー";
+          const t = "プリコネジグソー";
           const fontSize = 30;
-          this.add.text((canvas.width - fontSize * title.length) / 2, canvas.height / 10, title, {font: `bold ${fontSize}px sans-serif`, fill: "#000"});
+          const title = this.add.text((canvas.width - fontSize * t.length) / 2, canvas.height / 10 * 3 - fontSize / 2, t, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(1);
 
           let id = 0;
-          const items = ["美食殿", "トゥインクルウィッシュ", "リトルリリカル", "決定"];
+          const items = ["美食殿", "カルミナ", "リトルリリカル", "決定"];
           const c = "〈" + "　".repeat(Math.max(...items.map(e => e.length))) + "〉";
-          const cursor = this.add.text((canvas.width - fontSize * c.length) / 2, canvas.height / 10 * 4, c, {font: `${fontSize}px sans-serif`, fill: "#000"});
-          this.add.text((canvas.width - fontSize * items[0].length) / 2, canvas.height / 10 * 4, items[0], {font: `${fontSize}px sans-serif`, fill: "#000"}).setInteractive()
+          const cursor = this.add.text((canvas.width - fontSize * c.length) / 2, canvas.height / 10 * 4 - fontSize / 2, c, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(1);
+          const item0 = this.add.text((canvas.width - fontSize * items[0].length) / 2, canvas.height / 10 * 4 - fontSize / 2, items[0], {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(1).setInteractive()
           .on("pointerdown", () => {
-            cursor.y = canvas.height / 10 * 4;
+            cursor.y = item0.y;
             id = 0;
+            original0.setVisible(true);
+            original1.setVisible(false);
+            original2.setVisible(false);
           });
-          this.add.text((canvas.width - fontSize * items[1].length) / 2, canvas.height / 10 * 5, items[1], {font: `${fontSize}px sans-serif`, fill: "#000"}).setInteractive()
+          const item1 = this.add.text((canvas.width - fontSize * items[1].length) / 2, canvas.height / 10 * 5 - fontSize / 2, items[1], {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(1).setInteractive()
           .on("pointerdown", () => {
-            cursor.y = canvas.height / 10 * 5;
+            cursor.y = item1.y;
             id = 1;
+            original0.setVisible(false);
+            original1.setVisible(true);
+            original2.setVisible(false);
           });
-          this.add.text((canvas.width - fontSize * items[2].length) / 2, canvas.height / 10 * 6, items[2], {font: `${fontSize}px sans-serif`, fill: "#000"}).setInteractive()
+          const item2 = this.add.text((canvas.width - fontSize * items[2].length) / 2, canvas.height / 10 * 6 - fontSize / 2, items[2], {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(1).setInteractive()
           .on("pointerdown", () => {
-            cursor.y = canvas.height / 10 * 6
+            cursor.y = item2.y;
             id = 2;
+            original0.setVisible(false);
+            original1.setVisible(false);
+            original2.setVisible(true);
           });
-          this.add.text((canvas.width - fontSize * items[3].length) / 2, canvas.height / 10 * 7, items[3], {font: `${fontSize}px sans-serif`, fill: "#000"}).setInteractive()
-          .on("pointerdown", () => this.scene.start("Game", {id}));
+          this.add.text((canvas.width - fontSize * items[3].length) / 2, canvas.height / 10 * 7 - fontSize / 2, items[3], {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(1).setInteractive()
+          .on("pointerdown", () => {
+            this.scene.start("Game", {id})
+          });
 
-          this.scene.start("Game", {id});
+          this.add.graphics().fillStyle(0xffffff, 0.75).fillRoundedRect(title.x - fontSize, canvas.height / 10 * 2, t.length * fontSize + fontSize * 2, canvas.height / 10 * 6, 32);
+
+          // this.scene.start("Game", {id});
         }
         update() {
         }
@@ -85,14 +99,21 @@
           super({key: "Game"});
         }
         id;
+        loader;
         init(data) {
+          const canvas = this.sys.game.canvas;
+          const t = "ロード中";
+          const fontSize = 20;
+          this.loader = this.add.text((canvas.width - t.length * fontSize) / 2, canvas.height / 2, t, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
           this.id = data.id;
         }
         preload() {
+          console.log(this.id)
           const canvas = this.sys.game.canvas;
           this.add.rectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, "0xffffff");
           for (let i = 0; i < 100; ++i) {
-            this.load.image("piece" + i, "img/piece" + i + ".png");
+            this.load.image("piece" + i, `img/piece_${this.id}_${i}.png`);
+            this.load.image("shadow" + i, `img/piece_${this.id}_${i}.png`);
           }
         }
         pieces = [];
@@ -101,29 +122,42 @@
           const canvas = this.sys.game.canvas;
           this.add.rectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, "0xffffff");
 
-          let depth = 0;
           for (let i = 0; i < 100; ++i) {
             const pieceSize = 230;
             const scale = Math.min(canvas.width, canvas.height) / 10 / pieceSize;
             const x = i % 10;
             const y = Math.trunc(i / 10);
             const piece = this.add.image(pieceSize / 2 * scale + pieceSize * scale * x, pieceSize / 2 * scale + pieceSize * scale * y, "piece" + i).setScale(scale);
-            // piece.x = Math.trunc(Math.random() * (Math.min(canvas.width, canvas.height) - pieceSize * scale * 2) + pieceSize * scale);
-            // piece.y = Math.trunc(Math.random() * (Math.min(canvas.width, canvas.height) - pieceSize * scale * 2) + pieceSize * scale);
+            // piece.x = Math.trunc(Math.random() * (Math.min(canvas.width, canvas.height) - pieceSize * scale * 3) + pieceSize * scale * 1.5);
+            // piece.y = Math.trunc(Math.random() * (Math.min(canvas.width, canvas.height) - pieceSize * scale * 3) + pieceSize * scale * 1.5);
             const effectivePieceSize = 192 * scale;
+            let shadow = {};
+            const shadowOffset = effectivePieceSize / 10;
+            const shadowAlpha = 0.5;
             piece.setInteractive({draggable: true})
             .on("dragstart", (pointer, dragX, dragY) => {
-              depth++;
-              piece.setDepth(depth);
+              piece.setDepth(2);
+              shadow = {};
+              const s = this.add.image(piece.x + shadowOffset, piece.y + shadowOffset, "shadow" + i).setTint(0x000).setAlpha(shadowAlpha).setScale(scale).setDepth(1);
+              shadow[i] = s;
               this.connections.forEach(el => {
                 if (el.includes(i)) {
-                  el.forEach(e => this.pieces[e].setDepth(depth));
+                  el.forEach(e => {
+                    if (e === i) {
+                      return;
+                    }
+                    this.pieces[e].setDepth(2);
+                    const s = this.add.image(this.pieces[e].x + shadowOffset, this.pieces[e].y + shadowOffset, "shadow" + e).setTint(0x000).setAlpha(shadowAlpha).setScale(scale).setDepth(1);
+                    shadow[e] = s;
+                });
                 }
               });
             })
             .on("drag", (pointer, dragX, dragY) => {
               piece.x = dragX;
               piece.y = dragY;
+              shadow[i].x = dragX + shadowOffset;
+              shadow[i].y = dragY + shadowOffset;
               this.connections.forEach(el => {
                 if (el.includes(i)) {
                   el.forEach(e => {
@@ -136,6 +170,8 @@
                     const ye = Math.trunc(e / 10);
                     this.pieces[e].x = piece.x + (xe - xi) * effectivePieceSize;
                     this.pieces[e].y = piece.y + (ye - yi) * effectivePieceSize;
+                    shadow[e].x = this.pieces[e].x + shadowOffset;
+                    shadow[e].y = this.pieces[e].y + shadowOffset;
                   });
                 }
               });
@@ -143,9 +179,7 @@
             .on("dragend", () => {
               const connect = (index) => {
                 const adjustPosition = (i, offset) => {
-                    console.log('first', i, offset)
                   if (this.connections.some(e => e.includes(i) && e.includes(i + offset))) {
-                    console.log('return', i, offset)
                     return;
                   }
                   if (this.connections.some(e => e.includes(i)) && this.connections.some(e => e.includes(i + offset))) {
@@ -214,22 +248,47 @@
                 }
               };
               connect(i);
-                  console.log(i, this.connections)
+              piece.setDepth(0);
               this.connections.forEach(el => {
                 if (!el.includes(i)) {
-                  console.log('yhere')
                   return;
                 }
                 el.forEach(e => {
                   if (e === i) {
-                    // return;
+                    return;
                   }
                   connect(e);
+                  this.pieces[e].setDepth(0);
                 });
               });
+              Object.keys(shadow).map(key => shadow[key].destroy());
             });
             this.pieces.push(piece);
           }
+          const fontSize = 15;
+          const b = "パズル選択に戻る　　";
+          const back = this.add.text(canvas.width / 10, fontSize, b, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
+          back.setInteractive().on("pointerdown", () => {
+            for (let i = 0; i < 100; ++i) {
+              this.textures.remove("piece" + i);
+              this.textures.remove("shadow" + i);
+            }
+            this.scene.start("Title");
+          });
+          const s = "セーブ　　"
+          const save = this.add.text(back.x + b.length * fontSize, fontSize, s, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
+          save.setInteractive().on("pointerdown", () => {
+            const storage = localStorage;
+            for (let i = 0; i < 100; ++i) {
+              storage.setItem(`piece_${this.id}_${i}_x`, this.pieces[i].x);
+              storage.setItem(`piece_${this.id}_${i}_y`, this.pieces[i].y);
+            }
+            const s = this.connections.map(e => "[" + e.toString() + "]").join(",")
+            console.log(s, s.length);
+          });
+          const l = "ロード";
+          this.add.text(save.x + s.length * fontSize, fontSize, l, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
+          this.loader.setVisible(false);
         }
         update() {
         }
