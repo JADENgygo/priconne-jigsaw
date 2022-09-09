@@ -283,8 +283,7 @@
               storage.setItem(`piece_${this.id}_${i}_x`, this.pieces[i].x);
               storage.setItem(`piece_${this.id}_${i}_y`, this.pieces[i].y);
             }
-            const s = this.connections.map(e => "[" + e.toString() + "]").join(",")
-            console.log(s, s.length);
+            storage.setItem(`connection_${this.id}`, this.connections.map(e => "[" + e.toString() + "]").join(","));
           });
           const l = "ロード";
           this.add.text(save.x + s.length * fontSize, fontSize, l, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
