@@ -87,7 +87,6 @@
         id;
         init(data) {
           this.id = data.id;
-          console.log(data)
         }
         preload() {
           const canvas = this.sys.game.canvas;
@@ -142,36 +141,92 @@
               });
             })
             .on("dragend", () => {
-              const diff = pieceSize * scale;
-              const x = i % 10;
-              const y = Math.trunc(i / 10);
-              if (x !== 9 && this.pieces[i].x < this.pieces[i + 1].x && this.pieces[i + 1].x - this.pieces[i].x < diff && Math.abs(this.pieces[i + 1].y - this.pieces[i].y) < diff) {
-                this.pieces[i].x = this.pieces[i + 1].x - effectivePieceSize;
-                this.pieces[i].y = this.pieces[i + 1].y;
-                if (this.connections.some(e => e.includes(i) || e.includes(i + 1))) {
-                this.connections = this.connections.map(e => {
-                  if (e.includes(i) && e.includes(i + 1)) {
-                    return e;
+              const connect = (index) => {
+                const adjustPosition = (i, offset) => {
+                    console.log('first', i, offset)
+                  if (this.connections.some(e => e.includes(i) && e.includes(i + offset))) {
+                    console.log('return', i, offset)
+                    return;
                   }
-                  if (e.includes(i)) {
-                    return [...e, i + 1];
+                  if (this.connections.some(e => e.includes(i)) && this.connections.some(e => e.includes(i + offset))) {
+                    const c = this.connections.find(e => e.includes(i)).concat(this.connections.find(e => e.includes(i + offset)));
+                    const rests = this.connections.filter(e => !e.includes(i) && !e.includes(i + offset));
+                    this.connections = rests.length === 0 ? [c] : rests.concat([c]);
                   }
-                  return [...e, i];
+                  else if (this.connections.some(e => e.includes(i)) && !this.connections.some(e => e.includes(i + offset))) {
+                    this.connections = this.connections.map(e => e.includes(i) ? [...e, i + offset] : e);
+                  }
+                  else if (!this.connections.some(e => e.includes(i)) && this.connections.some(e => e.includes(i + offset))) {
+                    this.connections = this.connections.map(e => e.includes(i + offset) ? [...e, i] : e);
+                  }
+                  else {
+                    this.connections.push([i, i + offset]);
+                  }
+                  switch (offset) {
+                    case 1:
+                      this.pieces[i].x = this.pieces[i + offset].x - effectivePieceSize;
+                      this.pieces[i].y = this.pieces[i + offset].y;
+                      break;
+                    case -1:
+                      this.pieces[i].x = this.pieces[i + offset].x + effectivePieceSize;
+                      this.pieces[i].y = this.pieces[i + offset].y;
+                      break;
+                    case -10:
+                      this.pieces[i].x = this.pieces[i + offset].x;
+                      this.pieces[i].y = this.pieces[i + offset].y + effectivePieceSize;
+                      break;
+                    case 10:
+                      this.pieces[i].x = this.pieces[i + offset].x;
+                      this.pieces[i].y = this.pieces[i + offset].y - effectivePieceSize;
+                      break;
+                  }
+                  this.connections.forEach(el => {
+                    if (!el.includes(i)) {
+                      return;
+                    }
+                    el.forEach(e => {
+                      if (e === i) {
+                        return;
+                      }
+                      const xi = i % 10;
+                      const yi = Math.trunc(i / 10);
+                      const xe = e % 10;
+                      const ye = Math.trunc(e / 10);
+                      this.pieces[e].x = this.pieces[i].x + (xe - xi) * effectivePieceSize;
+                      this.pieces[e].y = this.pieces[i].y + (ye - yi) * effectivePieceSize;
+                    });
+                  });
+                };
+                const diff = effectivePieceSize;
+                const x = index % 10;
+                const y = Math.trunc(index / 10);
+                if (x !== 9 && this.pieces[index].x < this.pieces[index + 1].x && this.pieces[index + 1].x - this.pieces[index].x < diff && Math.abs(this.pieces[index + 1].y - this.pieces[index].y) < diff) {
+                  adjustPosition(index, 1);
+                }
+                if (x !== 0 && this.pieces[index - 1].x < this.pieces[index].x && this.pieces[index].x - this.pieces[index - 1].x < diff && Math.abs(this.pieces[index].y - this.pieces[index - 1].y) < diff) {
+                  adjustPosition(index, -1);
+                }
+                if (y !== 0 && Math.abs(this.pieces[index].x - this.pieces[index - 10].x) < diff && this.pieces[index - 10].y < this.pieces[index].y && this.pieces[index].y - this.pieces[index - 10].y < diff) {
+                  adjustPosition(index, -10);
+                }
+                if (y !== 9 && Math.abs(this.pieces[index + 10].x - this.pieces[index].x) < diff && this.pieces[index].y < this.pieces[index + 10].y && this.pieces[index + 10].y - this.pieces[index].y < diff) {
+                  adjustPosition(index, 10);
+                }
+              };
+              connect(i);
+                  console.log(i, this.connections)
+              this.connections.forEach(el => {
+                if (!el.includes(i)) {
+                  console.log('yhere')
+                  return;
+                }
+                el.forEach(e => {
+                  if (e === i) {
+                    // return;
+                  }
+                  connect(e);
                 });
-                }
-                else {
-                  this.connections.push([i, i + 1]);
-                }
-              }
-              else if (x !== 0 && this.pieces[i - 1].x < this.pieces[i].x && this.pieces[i].x - this.pieces[i - 1].x < diff && Math.abs(this.pieces[i].y - this.pieces[i - 1].y) < diff) {
-                console.log("connect to left")
-              }
-              else if (y !== 0 && Math.abs(this.pieces[i].x - this.pieces[i - 10].x) < diff && this.pieces[i - 10].y < this.pieces[i].y && this.pieces[i].y - this.pieces[i - 10].y < diff) {
-                console.log("connect to up")
-              }
-              else if (y !== 9 && Math.abs(this.pieces[i + 10].x - this.pieces[i].x) < diff && this.pieces[i].y < this.pieces[i + 10].y && this.pieces[i + 10].y - this.pieces[i].y < diff) {
-                console.log("connect to down")
-              }
+              });
             });
             this.pieces.push(piece);
           }
