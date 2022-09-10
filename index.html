@@ -12,24 +12,29 @@
 		<title>プリコネジグソー</title>
 		<link rel="icon" href="img/peko.png" />
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-		<style>
-			.content {
-			  position: relative;
-			  min-height: 100vh;
-			  padding: 0 0 150px 0;
-			}
-			footer {
-			  position: absolute;
-			  bottom: 0;
-			  width: 100%;
-			}
-		</style>
 	</head>
 	<body>
     <div id="game"></div>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
 		<script>
+      function footer(canvas) {
+        const fontSize = 15;
+        this.add.rectangle(canvas.width / 2, canvas.height - fontSize, canvas.width, fontSize * 2, "0xffffff");
+
+        const twitter = this.add.image(canvas.width / 20, canvas.height - fontSize, "twitter");
+        twitter.setInteractive().on("pointerdown", () => window.location.href = "https://twitter.com/JADENgygo");
+        this.add.line(twitter.x , twitter.y + twitter.height / 2, 0, 0, twitter.width, 0, 0x000).setLineWidth(0.5);
+
+        const toolText = "プリコネツール";
+        const tool = this.add.text(twitter.x + twitter.width + fontSize * 2, canvas.height - fontSize * 1.5, toolText, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
+        tool.setInteractive().on("pointerdown", () => window.location.href = "https://priconne-portfolio.vercel.app");
+        this.add.line(tool.x + toolText.length * fontSize / 2, tool.y + fontSize, 0, 0, toolText.length * fontSize, 0, 0x000).setLineWidth(0.5);
+
+        const copyrightText = "画像: © Cygames, Inc.";
+        this.add.text(tool.x + toolText.length * fontSize + fontSize * 2, canvas.height - fontSize * 1.5, copyrightText, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
+      }
+
       class Title extends Phaser.Scene {
         constructor() {
           super({key: "Title"});
@@ -40,6 +45,7 @@
           this.load.image("original0", "img/original0.png");
           this.load.image("original1", "img/original1.png");
           this.load.image("original2", "img/original2.png");
+          this.load.image("twitter", "img/twitter.svg");
         }
         create() {
           const canvas = this.sys.game.canvas;
@@ -88,6 +94,19 @@
           });
 
           this.add.graphics().fillStyle(0xffffff, 0.75).fillRoundedRect(title.x - fontSize, canvas.height / 10 * 2, t.length * fontSize + fontSize * 2, canvas.height / 10 * 6, 32);
+
+          footer.call(this, canvas);
+          // {
+          //   const fontSize = 15;
+          //   this.add.rectangle(canvas.width / 2, canvas.height - fontSize, canvas.width, fontSize * 2, "0xffffff");
+          //   const twitter = this.add.image(canvas.width / 20, canvas.height - fontSize, "twitter");
+          //   twitter.setInteractive().on("pointerdown", () => window.location.href = "https://twitter.com/JADENgygo");
+          //   const toolText = "プリコネツール";
+          //   const tool = this.add.text(twitter.x + twitter.width + fontSize * 2, canvas.height - fontSize * 1.5, toolText, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
+          //   tool.setInteractive().on("pointerdown", () => window.location.href = "https://priconne-portfolio.vercel.app");
+          //   const copyrightText = "画像: © Cygames, Inc.";
+          //   this.add.text(tool.x + toolText.length * fontSize + fontSize * 2, canvas.height - fontSize * 1.5, copyrightText, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
+          // }
         }
         update() {
         }
@@ -311,6 +330,7 @@
               connections = JSON.parse(c);
             }
           });
+          footer.call(this, canvas);
           this.loader.setVisible(false);
         }
         update() {
