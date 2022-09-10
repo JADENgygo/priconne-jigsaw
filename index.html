@@ -39,7 +39,12 @@
         constructor() {
           super({key: "Title"});
         }
+        loader;
         init() {
+          const canvas = this.sys.game.canvas;
+          const t = "ロード中";
+          const fontSize = 20;
+          this.loader = this.add.text((canvas.width - t.length * fontSize) / 2, canvas.height / 2, t, {font: `${fontSize}px sans-serif`, fill: "#ffffff"}).setDepth(10);
         }
         preload() {
           this.load.image("original0", "img/original0.png");
@@ -96,17 +101,7 @@
           this.add.graphics().fillStyle(0xffffff, 0.75).fillRoundedRect(title.x - fontSize, canvas.height / 10 * 2, t.length * fontSize + fontSize * 2, canvas.height / 10 * 6, 32);
 
           footer.call(this, canvas);
-          // {
-          //   const fontSize = 15;
-          //   this.add.rectangle(canvas.width / 2, canvas.height - fontSize, canvas.width, fontSize * 2, "0xffffff");
-          //   const twitter = this.add.image(canvas.width / 20, canvas.height - fontSize, "twitter");
-          //   twitter.setInteractive().on("pointerdown", () => window.location.href = "https://twitter.com/JADENgygo");
-          //   const toolText = "プリコネツール";
-          //   const tool = this.add.text(twitter.x + twitter.width + fontSize * 2, canvas.height - fontSize * 1.5, toolText, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
-          //   tool.setInteractive().on("pointerdown", () => window.location.href = "https://priconne-portfolio.vercel.app");
-          //   const copyrightText = "画像: © Cygames, Inc.";
-          //   this.add.text(tool.x + toolText.length * fontSize + fontSize * 2, canvas.height - fontSize * 1.5, copyrightText, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
-          // }
+          this.loader.visible = false;
         }
         update() {
         }
@@ -285,16 +280,16 @@
           }
           const fontSize = 15;
           const showText = "元画像表示";
-          const show = this.add.text(canvas.width / 20, fontSize, showText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
+          const show = this.add.text(canvas.width / 20, fontSize, showText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
           const actualSize = 1920;
           const scale = Math.min(canvas.width, canvas.height) / actualSize;
-          const original = this.add.image(canvas.width / 2, canvas.height / 2, "original" + this.id).setScale(scale).setDepth(10).setVisible(false);
+          const original = this.add.image(canvas.width / 2, canvas.height / 2, "original" + this.id).setScale(scale).setDepth(20).setVisible(false);
           show.setInteractive().on("pointerdown", () => {
             original.visible = !original.visible;
             show.text = original.visible ? "元画像非表示" : "元画像表示";
           });
           const backText = "パズル選択";
-          const back = this.add.text(show.x + (showText.length + 2) * fontSize, fontSize, backText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
+          const back = this.add.text(show.x + (showText.length + 2) * fontSize, fontSize, backText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
           back.setInteractive().on("pointerdown", () => {
             for (let i = 0; i < 100; ++i) {
               this.textures.remove("piece" + i);
@@ -303,7 +298,7 @@
             this.scene.start("Title");
           });
           const saveText = "セーブ"
-          const save = this.add.text(back.x + (backText.length + 2) * fontSize, fontSize, saveText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
+          const save = this.add.text(back.x + (backText.length + 2) * fontSize, fontSize, saveText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
           save.setInteractive().on("pointerdown", () => {
             const storage = localStorage;
             for (let i = 0; i < 100; ++i) {
@@ -313,7 +308,7 @@
             storage.setItem(`connection_${this.id}`, "[" + connections.map(e => "[" + e.toString() + "]").join(",") + "]");
           });
           const loadText = "ロード";
-          this.add.text(save.x + (saveText.length + 2) * fontSize, fontSize, loadText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(10).setInteractive().
+          this.add.text(save.x + (saveText.length + 2) * fontSize, fontSize, loadText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white").setInteractive().
           on("pointerdown", () => {
             const storage = localStorage;
             if (!storage.getItem(`piece_${this.id}_0_x`)) {
