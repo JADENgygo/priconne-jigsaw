@@ -288,6 +288,7 @@
             original.visible = !original.visible;
             show.text = original.visible ? "元画像非表示" : "元画像表示";
           });
+
           const backText = "パズル選択";
           const back = this.add.text(show.x + (showText.length + 2) * fontSize, fontSize, backText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
           back.setInteractive().on("pointerdown", () => {
@@ -297,8 +298,12 @@
             }
             this.scene.start("Title");
           });
+
           const saveText = "セーブ"
           const save = this.add.text(back.x + (backText.length + 2) * fontSize, fontSize, saveText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
+          const sdt = "セーブしました";
+          const saveDialogText = this.add.text((canvas.width - sdt.length * fontSize) / 2, canvas.height / 2, sdt, {font: `bold ${fontSize}px sans-serif`, fill: "#ffffff"}).setDepth(31).setVisible(false);
+          const saveDialog = this.add.graphics().fillStyle(0x000, 1).fillRoundedRect(saveDialogText.x - fontSize, saveDialogText.y - fontSize, (sdt.length + 2) * fontSize, fontSize * 3, 16).setDepth(30).setVisible(false);
           save.setInteractive().on("pointerdown", () => {
             const storage = localStorage;
             for (let i = 0; i < 100; ++i) {
@@ -306,7 +311,15 @@
               storage.setItem(`piece_${this.id}_${i}_y`, pieces[i].y);
             }
             storage.setItem(`connection_${this.id}`, "[" + connections.map(e => "[" + e.toString() + "]").join(",") + "]");
+            saveDialogText.text = "セーブしました";
+            saveDialog.visible = true;
+            saveDialogText.visible = true;
+            setTimeout(() => {
+              saveDialog.visible = false;
+              saveDialogText.visible = false;
+            }, 1000);
           });
+
           const loadText = "ロード";
           this.add.text(save.x + (saveText.length + 2) * fontSize, fontSize, loadText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white").setInteractive().
           on("pointerdown", () => {
@@ -324,6 +337,13 @@
             if (c !== "") {
               connections = JSON.parse(c);
             }
+            saveDialogText.text = "ロードしました";
+            saveDialog.visible = true;
+            saveDialogText.visible = true;
+            setTimeout(() => {
+              saveDialog.visible = false;
+              saveDialogText.visible = false;
+            }, 1000);
           });
           footer.call(this, canvas);
           this.loader.setVisible(false);
