@@ -142,8 +142,8 @@
             const x = i % 10;
             const y = Math.trunc(i / 10);
             const piece = this.add.image(pieceSize / 2 + pieceSize * x, pieceSize / 2 + pieceSize * y, "piece" + i).setScale(scale);
-            // piece.x = Math.trunc(Math.random() * (Math.min(canvas.width, canvas.height) - pieceSize * 3) + pieceSize * 1.5);
-            // piece.y = Math.trunc(Math.random() * (Math.min(canvas.width, canvas.height) - pieceSize * 3) + pieceSize * 1.5);
+            piece.x = Math.trunc(Math.random() * (Math.min(canvas.width, canvas.height) - pieceSize * 3) + pieceSize * 1.5);
+            piece.y = Math.trunc(Math.random() * (Math.min(canvas.width, canvas.height) - pieceSize * 3) + pieceSize * 1.5);
             const effectivePieceSize = 192 * scale;
             let shadow = {};
             const shadowOffset = effectivePieceSize / 10;
@@ -177,7 +177,6 @@
                   shadow[e] = s;
                 });
               });
-              console.log('start', pieces.map(e => e.depth))
             })
             .on("drag", (pointer, dragX, dragY) => {
               piece.x = dragX;
@@ -291,7 +290,14 @@
                   adjustPosition(index, 10, diff);
                 }
               };
-              let depth = Math.max(...pieces.filter(e => e.depth !== 2).map(e => e.depth)) + 1;
+              const ps = pieces.filter(e => e.depth !== 2);
+              let depth;
+              if (ps.length === 0) {
+                depth = -100;
+              }
+              else {
+                depth = Math.max(...ps.map(e => e.depth)) + 1;
+              }
               connections.forEach(el => {
                 if (!el.includes(i)) {
                   return;
@@ -308,7 +314,6 @@
               piece.setDepth(depth);
               connect(i);
               Object.keys(shadow).map(key => shadow[key].destroy());
-              console.log("end", pieces.map(e => e.depth))
             });
             piece.setDepth(-100 + i);
             pieces.push(piece);
