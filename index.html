@@ -102,6 +102,7 @@
 
           footer.call(this, canvas);
           this.loader.visible = false;
+            this.scene.start("Game", {id})
         }
         update() {
         }
@@ -122,7 +123,7 @@
         }
         preload() {
           const canvas = this.sys.game.canvas;
-          this.add.rectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, "0xffffff");
+          this.add.rectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, "0xffffff").setDepth(-200);
           for (let i = 0; i < 100; ++i) {
             this.load.image("piece" + i, `img/piece_${this.id}_${i}.png`);
             this.load.image("shadow" + i, `img/piece_${this.id}_${i}.png`);
@@ -141,30 +142,42 @@
             const x = i % 10;
             const y = Math.trunc(i / 10);
             const piece = this.add.image(pieceSize / 2 + pieceSize * x, pieceSize / 2 + pieceSize * y, "piece" + i).setScale(scale);
-            piece.x = Math.trunc(Math.random() * (Math.min(canvas.width, canvas.height) - pieceSize * 3) + pieceSize * 1.5);
-            piece.y = Math.trunc(Math.random() * (Math.min(canvas.width, canvas.height) - pieceSize * 3) + pieceSize * 1.5);
+            // piece.x = Math.trunc(Math.random() * (Math.min(canvas.width, canvas.height) - pieceSize * 3) + pieceSize * 1.5);
+            // piece.y = Math.trunc(Math.random() * (Math.min(canvas.width, canvas.height) - pieceSize * 3) + pieceSize * 1.5);
             const effectivePieceSize = 192 * scale;
             let shadow = {};
             const shadowOffset = effectivePieceSize / 10;
             const shadowAlpha = 0.5;
             piece.setInteractive({draggable: true})
             .on("dragstart", (pointer, dragX, dragY) => {
+              pieces.forEach(e => {
+                if (piece.depth < e.depth) {
+                  e.setDepth(e.depth - 1);
+                }
+              });
               piece.setDepth(2);
               shadow = {};
               const s = this.add.image(piece.x + shadowOffset, piece.y + shadowOffset, "shadow" + i).setTint(0x000).setAlpha(shadowAlpha).setScale(scale).setDepth(1);
               shadow[i] = s;
               connections.forEach(el => {
-                if (el.includes(i)) {
-                  el.forEach(e => {
-                    if (e === i) {
-                      return;
-                    }
-                    pieces[e].setDepth(2);
-                    const s = this.add.image(pieces[e].x + shadowOffset, pieces[e].y + shadowOffset, "shadow" + e).setTint(0x000).setAlpha(shadowAlpha).setScale(scale).setDepth(1);
-                    shadow[e] = s;
-                });
+                if (!el.includes(i)) {
+                  return;
                 }
+                el.forEach(e => {
+                  if (e === i) {
+                    return;
+                  }
+                  pieces.filter(e => e.depth !== 2).forEach(e_ => {
+                    if (pieces[e].depth < e_.depth) {
+                      e_.setDepth(e_.depth - 1);
+                    }
+                  });
+                  pieces[e].setDepth(2);
+                  const s = this.add.image(pieces[e].x + shadowOffset, pieces[e].y + shadowOffset, "shadow" + e).setTint(0x000).setAlpha(shadowAlpha).setScale(scale).setDepth(1);
+                  shadow[e] = s;
+                });
               });
+              console.log('start', pieces.map(e => e.depth))
             })
             .on("drag", (pointer, dragX, dragY) => {
               piece.x = dragX;
@@ -191,7 +204,25 @@
             })
             .on("dragend", () => {
               const connect = (index) => {
-                const adjustPosition = (i, offset) => {
+                const adjustPosition = (i, offset, diff) => {
+                  for (let elements of connections) {
+                    if (!elements.includes(i)) {
+                      continue;
+                    }
+                    const p = pieces.filter((_, i) => !elements.includes(i)).find(e => {
+                      return pieces[i + offset].depth < e.depth && Math.abs(pieces[i + offset].x - e.x) < diff && Math.abs(pieces[i + offset].y - e.y) < diff;
+                    });
+                    if (p) {
+                      return;
+                    }
+                    break;
+                  }
+                  const p = pieces.filter((_, i_) => i !== i_).find(e => {
+                    return pieces[i + offset].depth < e.depth && Math.abs(pieces[i + offset].x - e.x) < diff && Math.abs(pieces[i + offset].y - e.y) < diff;
+                  });
+                  if (p) {
+                    return;
+                  }
                   if (connections.some(e => e.includes(i) && e.includes(i + offset))) {
                     return;
                   }
@@ -248,20 +279,19 @@
                 const x = index % 10;
                 const y = Math.trunc(index / 10);
                 if (x !== 9 && pieces[index].x < pieces[index + 1].x && pieces[index + 1].x - pieces[index].x < diff && Math.abs(pieces[index + 1].y - pieces[index].y) < diff) {
-                  adjustPosition(index, 1);
+                  adjustPosition(index, 1, diff);
                 }
                 if (x !== 0 && pieces[index - 1].x < pieces[index].x && pieces[index].x - pieces[index - 1].x < diff && Math.abs(pieces[index].y - pieces[index - 1].y) < diff) {
-                  adjustPosition(index, -1);
+                  adjustPosition(index, -1, diff);
                 }
                 if (y !== 0 && Math.abs(pieces[index].x - pieces[index - 10].x) < diff && pieces[index - 10].y < pieces[index].y && pieces[index].y - pieces[index - 10].y < diff) {
-                  adjustPosition(index, -10);
+                  adjustPosition(index, -10, diff);
                 }
                 if (y !== 9 && Math.abs(pieces[index + 10].x - pieces[index].x) < diff && pieces[index].y < pieces[index + 10].y && pieces[index + 10].y - pieces[index].y < diff) {
-                  adjustPosition(index, 10);
+                  adjustPosition(index, 10, diff);
                 }
               };
-              connect(i);
-              piece.setDepth(0);
+              let depth = Math.max(...pieces.filter(e => e.depth !== 2).map(e => e.depth)) + 1;
               connections.forEach(el => {
                 if (!el.includes(i)) {
                   return;
@@ -271,26 +301,21 @@
                     return;
                   }
                   connect(e);
-                  pieces[e].setDepth(0);
+                  pieces[e].setDepth(depth);
+                  depth++;
                 });
               });
+              piece.setDepth(depth);
+              connect(i);
               Object.keys(shadow).map(key => shadow[key].destroy());
+              console.log("end", pieces.map(e => e.depth))
             });
+            piece.setDepth(-100 + i);
             pieces.push(piece);
           }
           const fontSize = 15;
-          const showText = "元画像表示";
-          const show = this.add.text(canvas.width / 20, fontSize, showText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
-          const actualSize = 1920;
-          const scale = Math.min(canvas.width, canvas.height) / actualSize;
-          const original = this.add.image(canvas.width / 2, canvas.height / 2, "original" + this.id).setScale(scale).setDepth(20).setVisible(false);
-          show.setInteractive().on("pointerdown", () => {
-            original.visible = !original.visible;
-            show.text = original.visible ? "元画像非表示" : "元画像表示";
-          });
-
           const backText = "パズル選択";
-          const back = this.add.text(show.x + (showText.length + 2) * fontSize, fontSize, backText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
+          const back = this.add.text(canvas.width / 20, fontSize, backText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
           back.setInteractive().on("pointerdown", () => {
             for (let i = 0; i < 100; ++i) {
               this.textures.remove("piece" + i);
@@ -299,8 +324,18 @@
             this.scene.start("Title");
           });
 
+          const showText = "元画像表示";
+          const show = this.add.text(back.x + (backText.length + 2) * fontSize, fontSize, showText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
+          const actualSize = 1920;
+          const scale = Math.min(canvas.width, canvas.height) / actualSize;
+          const original = this.add.image(canvas.width / 2, canvas.height / 2, "original" + this.id).setScale(scale).setDepth(20).setVisible(false);
+          show.setInteractive().on("pointerdown", () => {
+            original.visible = !original.visible;
+            show.text = original.visible ? "元画像非表示" : "元画像表示";
+          });
+
           const saveText = "セーブ"
-          const save = this.add.text(back.x + (backText.length + 2) * fontSize, fontSize, saveText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
+          const save = this.add.text(show.x + (showText.length + 2) * fontSize, fontSize, saveText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
           const sdt = "セーブしました";
           const saveDialogText = this.add.text((canvas.width - sdt.length * fontSize) / 2, canvas.height / 2, sdt, {font: `bold ${fontSize}px sans-serif`, fill: "#ffffff"}).setDepth(31).setVisible(false);
           const saveDialog = this.add.graphics().fillStyle(0x000, 1).fillRoundedRect(saveDialogText.x - fontSize, saveDialogText.y - fontSize, (sdt.length + 2) * fontSize, fontSize * 3, 16).setDepth(30).setVisible(false);
