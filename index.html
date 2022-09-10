@@ -348,6 +348,7 @@
             for (let i = 0; i < 100; ++i) {
               storage.setItem(`piece_${this.id}_${i}_x`, pieces[i].x);
               storage.setItem(`piece_${this.id}_${i}_y`, pieces[i].y);
+              storage.setItem(`piece_${this.id}_${i}_depth`, pieces[i].depth);
             }
             storage.setItem(`connection_${this.id}`, "[" + connections.map(e => "[" + e.toString() + "]").join(",") + "]");
             saveDialogText.text = "セーブしました";
@@ -369,8 +370,10 @@
             for (let i = 0; i < 100; ++i) {
               const x = storage.getItem(`piece_${this.id}_${i}_x`);
               const y = storage.getItem(`piece_${this.id}_${i}_y`);
+              const depth = storage.getItem(`piece_${this.id}_${i}_depth`);
               pieces[i].x = parseFloat(x);
               pieces[i].y = parseFloat(y);
+              pieces[i].depth = parseInt(depth);
             }
             const c = storage.getItem(`connection_${this.id}`);
             if (c !== "") {
