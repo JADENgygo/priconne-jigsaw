@@ -201,6 +201,7 @@
             const zoom = this.cameras.main.zoom + (pinch.scaleFactor - 1) / 1.5;
             const cameraXAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.x - document.documentElement.clientWidth / 2) / 10;
             const cameraYAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.y - document.documentElement.clientHeight / 2) / 10;
+            console.log("cameraXAdder", cameraXAdder, "cameraYAdder", cameraYAdder, "pinchPosiiton.x", pinchPosition.x, "pinchPosition.y", pinchPosition.y, "clientWidth", document.documentElement.clientWidth, "clientHeight", document.documentElement.clientHeight);
             this.Zoom(zoom, cameraXAdder, cameraYAdder);
 
             // this.cameras.main.zoom = Math.max(1, zoom);
@@ -505,4 +506,3 @@
 </html>
 
 <!-- todo 画像表示の倍率を変える -->
-<!-- todo 複数のピースを選べないようにする -->
