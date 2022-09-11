@@ -460,10 +460,10 @@
           this.loader.setVisible(false);
         }
         update() {
-            // console.log("mouse", this.input.mousePointer.x, this.input.mousePointer.y)
-          // const scale = this.pinch.scaleFactor;
-          // console.log(scale);
-          // this.cameras.main.zoom = 2;
+          if (this.pinch.isPinched) {
+            console.log('pinch')
+            alert('pinch')
+          }
         }
       }
 
