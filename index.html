@@ -189,15 +189,14 @@
               this.cameras.main.centerOn(camera.x, camera.y);
             }
           });
-          // this.pan.on("pan", (pan, gameObject, lastPointer) => {
-          //   alert('pan')
-          // });
         }
         pinch;
-        // pan;
         create() {
           this.pinch = this.rexGestures.add.pinch();
-          // this.pan = this.rexGestures.add.pan();
+          // this.pinch.on("drag1", pinch => console.log("drag1", pinch.pointers))
+          this.pinch.on("pinch", pinch => {
+            alert(pinch.scaleFactor, pinch.pointers.map(e => e.x + " " + e.y).join(", "));
+          });
 
           const pieces = [];
           let connections = [];
@@ -461,8 +460,8 @@
         }
         update() {
           if (this.pinch.isPinched) {
-            console.log('pinch')
-            alert('pinch')
+            // console.log('pinch')
+            // alert('pinch')
           }
         }
       }
