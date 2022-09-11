@@ -250,7 +250,7 @@
             const cameraXAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.x - document.documentElement.clientWidth / 2) / 10;
             const cameraYAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.y - document.documentElement.clientHeight / 2) / 10;
             this.Zoom(zoom, cameraXAdder, cameraYAdder);
-            info.text = pinch.scaleFactor + ": " + pinch.pointers.map(e => e.x + " " + e.y).join(", ");
+            info.text = pinch.pointers.map(e => e.x + " " + e.y).join(",");
           });
 
           const pieces = [];
