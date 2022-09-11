@@ -128,26 +128,34 @@
         Zoom(zoom, cameraXAdder, cameraYAdder) {
           const canvas = this.sys.game.canvas;
           if (1 < zoom) {
+            const position = {x: this.cameraPosition.x + cameraXAdder, y: this.cameraPosition.y + cameraYAdder};
+            const left = position.x - document.documentElement.clientWidth / 2 / zoom;
+            const right = position.x + document.documentElement.clientWidth / 2 / zoom;
+            const top = position.y - document.documentElement.clientHeight / 2 / zoom;
+            const bottom = position.y + document.documentElement.clientHeight / 2 / zoom;
+            if (left < 0) {
+              console.log('left')
+              position.x = document.documentElement.clientWidth / 2 / zoom;
+              // return;
+            }
+            if (canvas.width < right) {
+              console.log('right')
+              position.x = canvas.width - document.documentElement.clientWidth / 2 / zoom;
+              // return;
+            }
+            if (top < 0) {
+              console.log('top')
+              position.y = document.documentElement.clientHeight / 2 / zoom;
+              // return;
+            }
+            if (canvas.height < bottom) {
+              console.log('bottom')
+              position.y = canvas.height - document.documentElement.clientHeight / 2 / zoom;
+              // return;
+            }
             this.cameras.main.zoom = zoom;
             this.cameraPosition.x += cameraXAdder;
             this.cameraPosition.y += cameraYAdder;
-
-            const left = this.cameraPosition.x - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-            const right = this.cameraPosition.x + document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-            const top = this.cameraPosition.y - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-            const bottom = this.cameraPosition.y + document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-            if (left < 0) {
-              this.cameraPosition.x = document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-            }
-            if (canvas.width < right) {
-              this.cameraPosition.x = canvas.width - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-            }
-            if (top < 0) {
-              this.cameraPosition.y = document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-            }
-            if (canvas.height < bottom) {
-              this.cameraPosition.y = canvas.height - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-            }
             this.cameras.main.centerOn(this.cameraPosition.x, this.cameraPosition.y);
           }
           else {
@@ -192,9 +200,9 @@
             const top = this.cameraPosition.y + (preDragPosition.y - pointer.y) - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
             const bottom = this.cameraPosition.y + (preDragPosition.y - pointer.y) + document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
             if (left < 0 || canvas.width < right || top < 0 || canvas.height < bottom) {
-              preDragPosition.x = pointer.x;
-              preDragPosition.y = pointer.y;
-              return;
+              // preDragPosition.x = pointer.x;
+              // preDragPosition.y = pointer.y;
+              // return;
             }
             this.cameraPosition.x += preDragPosition.x - pointer.x;
             this.cameraPosition.y += preDragPosition.y - pointer.y;
@@ -205,38 +213,16 @@
           on("dragend", () => cancel = false);
           this.input.on('wheel', (pointer, currentlyOver, dx, dy, dz, event) => {
             const zoom = this.cameras.main.zoom - pointer.deltaY / 500;
-            const cameraXAdder = Math.sign(-pointer.deltaY) * (pointer.x - document.documentElement.clientWidth / 2) / 10;
-            const cameraYAdder = Math.sign(-pointer.deltaY) * (pointer.y - document.documentElement.clientHeight / 2) / 10;
-            this.Zoom(zoom, cameraXAdder, cameraYAdder);
-            // if (1 < zoom) {
-            //   this.cameras.main.zoom = zoom;
-            //   camera.x += Math.sign(-pointer.deltaY) * (pointer.x - document.documentElement.clientWidth / 2) / 10;
-            //   camera.y += Math.sign(-pointer.deltaY) * (pointer.y - document.documentElement.clientHeight / 2) / 10;
-
-            //   const left = camera.x - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-            //   const right = camera.x + document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-            //   const top = camera.y - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-            //   const bottom = camera.y + document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-            //   if (left < 0) {
-            //     camera.x = document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-            //   }
-            //   if (canvas.width < right) {
-            //     camera.x = canvas.width - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-            //   }
-            //   if (top < 0) {
-            //     camera.y = document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-            //   }
-            //   if (canvas.height < bottom) {
-            //     camera.y = canvas.height - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-            //   }
-            //   this.cameras.main.centerOn(camera.x, camera.y);
-            // }
-            // else {
-            //   this.cameras.main.zoom = 1;
-            //   camera.x = canvas.width / 2;
-            //   camera.y = canvas.height / 2;
-            //   this.cameras.main.centerOn(camera.x, camera.y);
-            // }
+            this.cameras.main.zoom = Math.max(1, zoom);
+            if (this.cameras.main.zoom === 1) {
+              this.cameraPosition.x = canvas.width / 2;
+              this.cameraPosition.y = canvas.height / 2;
+              this.cameras.main.centerOn(canvas.width / 2, canvas.height / 2);
+            }
+            // const cameraXAdder = Math.sign(-pointer.deltaY) * (pointer.x - document.documentElement.clientWidth / 2) / 10;
+            // const cameraYAdder = Math.sign(-pointer.deltaY) * (pointer.y - document.documentElement.clientHeight / 2) / 10;
+            // this.Zoom(zoom, cameraXAdder, cameraYAdder);
+            console.log("wheel", this.cameras.main.zoom);
           });
         }
 
@@ -259,9 +245,15 @@
               return;
             }
             const zoom = this.cameras.main.zoom + (pinch.scaleFactor - 1) / 1;
-            const cameraXAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.x - document.documentElement.clientWidth / 2) / 10;
-            const cameraYAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.y - document.documentElement.clientHeight / 2) / 10;
-            this.Zoom(zoom, cameraXAdder, cameraYAdder);
+            this.cameras.main.zoom = Math.max(1, zoom);
+            if (this.cameras.main.zoom === 1) {
+              this.cameraPosition.x = canvas.width / 2;
+              this.cameraPosition.y = canvas.height / 2;
+              this.cameras.main.centerOn(canvas.width / 2, canvas.height / 2);
+            }
+            // const cameraXAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.x - document.documentElement.clientWidth / 2) / 10;
+            // const cameraYAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.y - document.documentElement.clientHeight / 2) / 10;
+            // this.Zoom(zoom, cameraXAdder, cameraYAdder);
             info.text = pinch.pointers.map(e => e.x + " " + e.y).join(",");
           });
           this.pinch.on("pinchend", pinch => {
@@ -562,3 +554,4 @@
 </html>
 
 <!-- todo 画像表示の倍率を変える -->
+<!-- todo 複数のピースを選べないようにする -->
