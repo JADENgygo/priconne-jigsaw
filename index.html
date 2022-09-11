@@ -234,6 +234,7 @@
         create() {
           const canvas = this.sys.game.canvas;
 
+          const info0 = this.add.text(10, document.documentElement.clientHeight - 130, "", {font: `30px sans-serif`, fill: "#000"});
           const info = this.add.text(10, document.documentElement.clientHeight - 100, "", {font: `30px sans-serif`, fill: "#000"});
           const pinch = this.rexGestures.add.pinch();
           // this.pinch.on("drag1", pinch => console.log("drag1", pinch.pointers))
@@ -241,6 +242,7 @@
           pinch.on("pinchstart", pinch => {
             pinchPosition.x = (pinch.pointers[0].x + pinch.pointers[1].x) / 2;
             pinchPosition.y = (pinch.pointers[0].y + pinch.pointers[1].y) / 2;
+            info0.text = "start";
           });
           pinch.on("pinch", pinch => {
             if (pinch.scaleFactor === 1) {
@@ -251,6 +253,9 @@
             const cameraYAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.y - document.documentElement.clientHeight / 2) / 10;
             this.Zoom(zoom, cameraXAdder, cameraYAdder);
             info.text = pinch.pointers.map(e => e.x + " " + e.y).join(",");
+          });
+          pinch.on("pinchend", pinch => {
+            info0.text = "";
           });
 
           const pieces = [];
