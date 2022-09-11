@@ -116,6 +116,7 @@
 
         id;
         loader;
+
         init(data) {
           const canvas = this.sys.game.canvas;
           const t = "ロード中";
@@ -125,34 +126,10 @@
         }
 
         cameraPosition = {x: 0, y: 0};
+
         Zoom(zoom, cameraXAdder, cameraYAdder) {
           const canvas = this.sys.game.canvas;
           if (1 < zoom) {
-            const position = {x: this.cameraPosition.x + cameraXAdder, y: this.cameraPosition.y + cameraYAdder};
-            const left = position.x - document.documentElement.clientWidth / 2 / zoom;
-            const right = position.x + document.documentElement.clientWidth / 2 / zoom;
-            const top = position.y - document.documentElement.clientHeight / 2 / zoom;
-            const bottom = position.y + document.documentElement.clientHeight / 2 / zoom;
-            if (left < 0) {
-              console.log('left')
-              position.x = document.documentElement.clientWidth / 2 / zoom;
-              // return;
-            }
-            if (canvas.width < right) {
-              console.log('right')
-              position.x = canvas.width - document.documentElement.clientWidth / 2 / zoom;
-              // return;
-            }
-            if (top < 0) {
-              console.log('top')
-              position.y = document.documentElement.clientHeight / 2 / zoom;
-              // return;
-            }
-            if (canvas.height < bottom) {
-              console.log('bottom')
-              position.y = canvas.height - document.documentElement.clientHeight / 2 / zoom;
-              // return;
-            }
             this.cameras.main.zoom = zoom;
             this.cameraPosition.x += cameraXAdder;
             this.cameraPosition.y += cameraYAdder;
@@ -174,95 +151,69 @@
           this.load.image("original" + this.id, `img/original_${this.id}.png`);
           this.load.scenePlugin('rexgesturesplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexgesturesplugin.min.js', 'rexGestures', 'rexGestures');
 
-          this.cameraPosition.x = this.cameras.main.centerX
+          this.cameraPosition.x = this.cameras.main.centerX;
           this.cameraPosition.y = this.cameras.main.centerY;
-          const canvas = this.sys.game.canvas;
           const preDragPosition = {x: 0, y: 0};
-          let cancel = false;
+          const canvas = this.sys.game.canvas;
           this.add.rectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, "0xffffff").setDepth(-200).setInteractive({draggable: true}).
           on("dragstart", (pointer, dragX, dragY) => {
-            if (this.pinch.isPinched) {
-              cancel = true;
-              return;
-            }
             preDragPosition.x = pointer.x;
             preDragPosition.y = pointer.y;
           }).
           on("drag", (pointer, dragX, dragY) => {
-            if (cancel) {
-              return;
-            }
             if (this.cameras.main.zoom === 1) {
               return;
-            }
-            const left = this.cameraPosition.x + (preDragPosition.x - pointer.x) - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-            const right = this.cameraPosition.x + (preDragPosition.x - pointer.x) + document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-            const top = this.cameraPosition.y + (preDragPosition.y - pointer.y) - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-            const bottom = this.cameraPosition.y + (preDragPosition.y - pointer.y) + document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-            if (left < 0 || canvas.width < right || top < 0 || canvas.height < bottom) {
-              // preDragPosition.x = pointer.x;
-              // preDragPosition.y = pointer.y;
-              // return;
             }
             this.cameraPosition.x += preDragPosition.x - pointer.x;
             this.cameraPosition.y += preDragPosition.y - pointer.y;
             preDragPosition.x = pointer.x;
             preDragPosition.y = pointer.y;
             this.cameras.main.centerOn(this.cameraPosition.x, this.cameraPosition.y);
-          }).
-          on("dragend", () => cancel = false);
+          });
+
           this.input.on('wheel', (pointer, currentlyOver, dx, dy, dz, event) => {
             const zoom = this.cameras.main.zoom - pointer.deltaY / 500;
-            this.cameras.main.zoom = Math.max(1, zoom);
-            if (this.cameras.main.zoom === 1) {
-              this.cameraPosition.x = canvas.width / 2;
-              this.cameraPosition.y = canvas.height / 2;
-              this.cameras.main.centerOn(canvas.width / 2, canvas.height / 2);
-            }
-            // const cameraXAdder = Math.sign(-pointer.deltaY) * (pointer.x - document.documentElement.clientWidth / 2) / 10;
-            // const cameraYAdder = Math.sign(-pointer.deltaY) * (pointer.y - document.documentElement.clientHeight / 2) / 10;
-            // this.Zoom(zoom, cameraXAdder, cameraYAdder);
-            console.log("wheel", this.cameras.main.zoom);
+            const cameraXAdder = Math.sign(-pointer.deltaY) * (pointer.x - document.documentElement.clientWidth / 2) / 10;
+            const cameraYAdder = Math.sign(-pointer.deltaY) * (pointer.y - document.documentElement.clientHeight / 2) / 10;
+            this.Zoom(zoom, cameraXAdder, cameraYAdder);
+
+            // this.cameras.main.zoom = Math.max(1, zoom);
+            // if (this.cameras.main.zoom === 1) {
+            //   this.cameraPosition.x = canvas.width / 2;
+            //   this.cameraPosition.y = canvas.height / 2;
+            //   this.cameras.main.centerOn(canvas.width / 2, canvas.height / 2);
+            // }
           });
         }
 
-        pinch;
         create() {
           const canvas = this.sys.game.canvas;
-
-          const info0 = this.add.text(10, document.documentElement.clientHeight - 130, "", {font: `30px sans-serif`, fill: "#000"});
-          const info = this.add.text(10, document.documentElement.clientHeight - 100, "", {font: `30px sans-serif`, fill: "#000"});
-          this.pinch = this.rexGestures.add.pinch();
-          // this.pinch.on("drag1", pinch => console.log("drag1", pinch.pointers))
+          const pinch = this.rexGestures.add.pinch();
           const pinchPosition = {x: 0, y: 0};
-          this.pinch.on("pinchstart", pinch => {
+          pinch.on("pinchstart", pinch => {
             pinchPosition.x = (pinch.pointers[0].x + pinch.pointers[1].x) / 2;
             pinchPosition.y = (pinch.pointers[0].y + pinch.pointers[1].y) / 2;
-            info0.text = "start";
-          });
-          this.pinch.on("pinch", pinch => {
+          }).
+          on("pinch", pinch => {
             if (pinch.scaleFactor === 1) {
               return;
             }
-            const zoom = this.cameras.main.zoom + (pinch.scaleFactor - 1) / 1;
-            this.cameras.main.zoom = Math.max(1, zoom);
-            if (this.cameras.main.zoom === 1) {
-              this.cameraPosition.x = canvas.width / 2;
-              this.cameraPosition.y = canvas.height / 2;
-              this.cameras.main.centerOn(canvas.width / 2, canvas.height / 2);
-            }
-            // const cameraXAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.x - document.documentElement.clientWidth / 2) / 10;
-            // const cameraYAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.y - document.documentElement.clientHeight / 2) / 10;
-            // this.Zoom(zoom, cameraXAdder, cameraYAdder);
-            info.text = pinch.pointers.map(e => e.x + " " + e.y).join(",");
-          });
-          this.pinch.on("pinchend", pinch => {
-            info0.text = "";
+            const zoom = this.cameras.main.zoom + (pinch.scaleFactor - 1);
+            const cameraXAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.x - document.documentElement.clientWidth / 2) / 10;
+            const cameraYAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.y - document.documentElement.clientHeight / 2) / 10;
+            this.Zoom(zoom, cameraXAdder, cameraYAdder);
+
+            // this.cameras.main.zoom = Math.max(1, zoom);
+            // if (this.cameras.main.zoom === 1) {
+            //   this.cameraPosition.x = canvas.width / 2;
+            //   this.cameraPosition.y = canvas.height / 2;
+            //   this.cameras.main.centerOn(canvas.width / 2, canvas.height / 2);
+            // }
           });
 
           const pieces = [];
           let connections = [];
-          let cancel = false;
+          let movedPiece = null;
 
           for (let i = 0; i < 100; ++i) {
             const actualPieceSize = 230;
@@ -279,10 +230,10 @@
             const shadowAlpha = 0.5;
             piece.setInteractive({draggable: true})
             .on("dragstart", (pointer, dragX, dragY) => {
-              if (this.pinch.isPinched) {
-                cancel = true;
+              if (movedPiece !== null) {
                 return;
               }
+              movedPiece = i;
               pieces.forEach(e => {
                 if (piece.depth < e.depth) {
                   e.setDepth(e.depth - 1);
@@ -312,7 +263,7 @@
               });
             })
             .on("drag", (pointer, dragX, dragY) => {
-              if (cancel) {
+              if (movedPiece !== i) {
                 return;
               }
               piece.x = dragX;
@@ -338,8 +289,7 @@
               });
             })
             .on("dragend", () => {
-              if (cancel) {
-                cancel = false;
+              if (movedPiece !== i) {
                 return;
               }
               const connect = (index) => {
@@ -454,6 +404,7 @@
               piece.setDepth(depth);
               connect(i);
               Object.keys(shadow).map(key => shadow[key].destroy());
+              movedPiece = null;
             });
             piece.setDepth(-100 + i);
             pieces.push(piece);
