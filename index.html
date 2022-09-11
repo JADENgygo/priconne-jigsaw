@@ -195,7 +195,7 @@
           this.pinch = this.rexGestures.add.pinch();
           // this.pinch.on("drag1", pinch => console.log("drag1", pinch.pointers))
           this.pinch.on("pinch", pinch => {
-            alert(pinch.scaleFactor, pinch.pointers.map(e => e.x + " " + e.y).join(", "));
+            alert(pinch.scaleFactor + ": " + pinch.pointers.map(e => e.x + " " + e.y).join(", "));
           });
 
           const pieces = [];
