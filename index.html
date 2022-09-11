@@ -170,16 +170,18 @@
           this.cameraPosition.y = this.cameras.main.centerY;
           const canvas = this.sys.game.canvas;
           const preDragPosition = {x: 0, y: 0};
+          let cancel = false;
           this.add.rectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, "0xffffff").setDepth(-200).setInteractive({draggable: true}).
           on("dragstart", (pointer, dragX, dragY) => {
             if (this.pinch.isPinched) {
+              cancel = true;
               return;
             }
             preDragPosition.x = pointer.x;
             preDragPosition.y = pointer.y;
           }).
           on("drag", (pointer, dragX, dragY) => {
-            if (this.pinch.isPinched) {
+            if (cancel) {
               return;
             }
             if (this.cameras.main.zoom === 1) {
@@ -199,7 +201,8 @@
             preDragPosition.x = pointer.x;
             preDragPosition.y = pointer.y;
             this.cameras.main.centerOn(this.cameraPosition.x, this.cameraPosition.y);
-          });
+          }).
+          on("dragend", () => cancel = false);
           this.input.on('wheel', (pointer, currentlyOver, dx, dy, dz, event) => {
             const zoom = this.cameras.main.zoom - pointer.deltaY / 500;
             const cameraXAdder = Math.sign(-pointer.deltaY) * (pointer.x - document.documentElement.clientWidth / 2) / 10;
@@ -267,6 +270,7 @@
 
           const pieces = [];
           let connections = [];
+          let cancel = false;
 
           for (let i = 0; i < 100; ++i) {
             const actualPieceSize = 230;
@@ -284,6 +288,7 @@
             piece.setInteractive({draggable: true})
             .on("dragstart", (pointer, dragX, dragY) => {
               if (this.pinch.isPinched) {
+                cancel = true;
                 return;
               }
               pieces.forEach(e => {
@@ -315,7 +320,7 @@
               });
             })
             .on("drag", (pointer, dragX, dragY) => {
-              if (this.pinch.isPinched) {
+              if (cancel) {
                 return;
               }
               piece.x = dragX;
@@ -341,7 +346,8 @@
               });
             })
             .on("dragend", () => {
-              if (this.pinch.isPinched) {
+              if (cancel) {
+                cancel = false;
                 return;
               }
               const connect = (index) => {
