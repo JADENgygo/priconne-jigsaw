@@ -157,12 +157,11 @@
             preDragPosition.y = pointer.y;
             this.cameras.main.centerOn(camera.x, camera.y);
           });
-          this.input.on('wheel', (pointer, currentlyOver, dx, dy, dz, event) => {
-            const zoom = this.cameras.main.zoom - pointer.deltaY / 500;
+          const Zoom = (zoom, cameraXAdder, cameraYAdder) => {
             if (1 < zoom) {
               this.cameras.main.zoom = zoom;
-              camera.x += Math.sign(-pointer.deltaY) * (pointer.x - document.documentElement.clientWidth / 2) / 10;
-              camera.y += Math.sign(-pointer.deltaY) * (pointer.y - document.documentElement.clientHeight / 2) / 10;
+              camera.x += cameraXAdder;
+              camera.y += cameraYAdder;
 
               const left = camera.x - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
               const right = camera.x + document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
@@ -188,14 +187,61 @@
               camera.y = canvas.height / 2;
               this.cameras.main.centerOn(camera.x, camera.y);
             }
+          };
+          this.input.on('wheel', (pointer, currentlyOver, dx, dy, dz, event) => {
+            const zoom = this.cameras.main.zoom - pointer.deltaY / 500;
+            const cameraXAdder = Math.sign(-pointer.deltaY) * (pointer.x - document.documentElement.clientWidth / 2) / 10;
+            const cameraYAdder = Math.sign(-pointer.deltaY) * (pointer.y - document.documentElement.clientHeight / 2) / 10;
+            Zoom(zoom, cameraXAdder, cameraYAdder);
+            // if (1 < zoom) {
+            //   this.cameras.main.zoom = zoom;
+            //   camera.x += Math.sign(-pointer.deltaY) * (pointer.x - document.documentElement.clientWidth / 2) / 10;
+            //   camera.y += Math.sign(-pointer.deltaY) * (pointer.y - document.documentElement.clientHeight / 2) / 10;
+
+            //   const left = camera.x - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
+            //   const right = camera.x + document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
+            //   const top = camera.y - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
+            //   const bottom = camera.y + document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
+            //   if (left < 0) {
+            //     camera.x = document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
+            //   }
+            //   if (canvas.width < right) {
+            //     camera.x = canvas.width - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
+            //   }
+            //   if (top < 0) {
+            //     camera.y = document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
+            //   }
+            //   if (canvas.height < bottom) {
+            //     camera.y = canvas.height - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
+            //   }
+            //   this.cameras.main.centerOn(camera.x, camera.y);
+            // }
+            // else {
+            //   this.cameras.main.zoom = 1;
+            //   camera.x = canvas.width / 2;
+            //   camera.y = canvas.height / 2;
+            //   this.cameras.main.centerOn(camera.x, camera.y);
+            // }
           });
         }
-        pinch;
         create() {
-          this.pinch = this.rexGestures.add.pinch();
+          const info = this.add.text(10, document.documentElement.clientHeight - 100, "", {font: `30px sans-serif`, fill: "#000"});
+          const pinch = this.rexGestures.add.pinch();
           // this.pinch.on("drag1", pinch => console.log("drag1", pinch.pointers))
-          this.pinch.on("pinch", pinch => {
-            alert(pinch.scaleFactor + ": " + pinch.pointers.map(e => e.x + " " + e.y).join(", "));
+          const pinchPosition = {x: 0, y: 0};
+          pinch.on("pinchstart", pinch => {
+            pinchPosition.x = (pinch.pointers[0].x + pinch.pointers[1].x) / 2;
+            pinchPosition.y = (pinch.pointers[0].y + pinch.pointers[1].y) / 2;
+          });
+          pinch.on("pinch", pinch => {
+            if (pinch.scaleFactor === 1) {
+              return;
+            }
+            const zoom = this.cameras.main.zoom + pinch.scaleFactor;
+            const cameraXAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.x - document.documentElement.clientWidth / 2) / 10;
+            const cameraYAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.y - document.documentElement.clientHeight / 2) / 10;
+            Zoom(zoom, cameraXAdder, cameraYAdder);
+            info.text = pinch.scaleFactor + ": " + pinch.pointers.map(e => e.x + " " + e.y).join(", ");
           });
 
           const pieces = [];
@@ -459,10 +505,6 @@
           this.loader.setVisible(false);
         }
         update() {
-          if (this.pinch.isPinched) {
-            // console.log('pinch')
-            // alert('pinch')
-          }
         }
       }
 
