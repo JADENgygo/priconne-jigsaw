@@ -258,7 +258,7 @@
             if (pinch.scaleFactor === 1) {
               return;
             }
-            const zoom = this.cameras.main.zoom + (1 - pinch.scaleFactor) / 2;
+            const zoom = this.cameras.main.zoom + (pinch.scaleFactor - 1) / 1;
             const cameraXAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.x - document.documentElement.clientWidth / 2) / 10;
             const cameraYAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.y - document.documentElement.clientHeight / 2) / 10;
             this.Zoom(zoom, cameraXAdder, cameraYAdder);
