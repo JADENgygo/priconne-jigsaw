@@ -113,6 +113,7 @@
         constructor() {
           super({key: "Game"});
         }
+
         id;
         loader;
         init(data) {
@@ -122,6 +123,41 @@
           this.loader = this.add.text((canvas.width - t.length * fontSize) / 2, canvas.height / 2, t, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
           this.id = data.id;
         }
+
+        cameraPosition = {x: 0, y: 0};
+        Zoom(zoom, cameraXAdder, cameraYAdder) {
+          const canvas = this.sys.game.canvas;
+          if (1 < zoom) {
+            this.cameras.main.zoom = zoom;
+            this.cameraPosition.x += cameraXAdder;
+            this.cameraPosition.y += cameraYAdder;
+
+            const left = this.cameraPosition.x - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
+            const right = this.cameraPosition.x + document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
+            const top = this.cameraPosition.y - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
+            const bottom = this.cameraPosition.y + document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
+            if (left < 0) {
+              this.cameraPosition.x = document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
+            }
+            if (canvas.width < right) {
+              this.cameraPosition.x = canvas.width - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
+            }
+            if (top < 0) {
+              this.cameraPosition.y = document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
+            }
+            if (canvas.height < bottom) {
+              this.cameraPosition.y = canvas.height - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
+            }
+            this.cameras.main.centerOn(this.cameraPosition.x, this.cameraPosition.y);
+          }
+          else {
+            this.cameras.main.zoom = 1;
+            this.cameraPosition.x = canvas.width / 2;
+            this.cameraPosition.y = canvas.height / 2;
+            this.cameras.main.centerOn(this.cameraPosition.x, this.cameraPosition.y);
+          }
+        }
+
         preload() {
           for (let i = 0; i < 100; ++i) {
             this.load.image("piece" + i, `img/piece_${this.id}_${i}.png`);
@@ -130,9 +166,10 @@
           this.load.image("original" + this.id, `img/original_${this.id}.png`);
           this.load.scenePlugin('rexgesturesplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexgesturesplugin.min.js', 'rexGestures', 'rexGestures');
 
+          this.cameraPosition.x = this.cameras.main.centerX
+          this.cameraPosition.y = this.cameras.main.centerY;
           const canvas = this.sys.game.canvas;
           const preDragPosition = {x: 0, y: 0};
-          const camera = {x: this.cameras.main.centerX, y: this.cameras.main.centerY};
           this.add.rectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, "0xffffff").setDepth(-200).setInteractive({draggable: true}).
           on("dragstart", (pointer, dragX, dragY) => {
             preDragPosition.x = pointer.x;
@@ -142,57 +179,26 @@
             if (this.cameras.main.zoom === 1) {
               return;
             }
-            const left = camera.x + (preDragPosition.x - pointer.x) - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-            const right = camera.x + (preDragPosition.x - pointer.x) + document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-            const top = camera.y + (preDragPosition.y - pointer.y) - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-            const bottom = camera.y + (preDragPosition.y - pointer.y) + document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
+            const left = this.cameraPosition.x + (preDragPosition.x - pointer.x) - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
+            const right = this.cameraPosition.x + (preDragPosition.x - pointer.x) + document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
+            const top = this.cameraPosition.y + (preDragPosition.y - pointer.y) - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
+            const bottom = this.cameraPosition.y + (preDragPosition.y - pointer.y) + document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
             if (left < 0 || canvas.width < right || top < 0 || canvas.height < bottom) {
               preDragPosition.x = pointer.x;
               preDragPosition.y = pointer.y;
               return;
             }
-            camera.x += preDragPosition.x - pointer.x;
-            camera.y += preDragPosition.y - pointer.y;
+            this.cameraPosition.x += preDragPosition.x - pointer.x;
+            this.cameraPosition.y += preDragPosition.y - pointer.y;
             preDragPosition.x = pointer.x;
             preDragPosition.y = pointer.y;
-            this.cameras.main.centerOn(camera.x, camera.y);
+            this.cameras.main.centerOn(this.cameraPosition.x, this.cameraPosition.y);
           });
-          const Zoom = (zoom, cameraXAdder, cameraYAdder) => {
-            if (1 < zoom) {
-              this.cameras.main.zoom = zoom;
-              camera.x += cameraXAdder;
-              camera.y += cameraYAdder;
-
-              const left = camera.x - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-              const right = camera.x + document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-              const top = camera.y - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-              const bottom = camera.y + document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-              if (left < 0) {
-                camera.x = document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-              }
-              if (canvas.width < right) {
-                camera.x = canvas.width - document.documentElement.clientWidth / 2 / this.cameras.main.zoom;
-              }
-              if (top < 0) {
-                camera.y = document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-              }
-              if (canvas.height < bottom) {
-                camera.y = canvas.height - document.documentElement.clientHeight / 2 / this.cameras.main.zoom;
-              }
-              this.cameras.main.centerOn(camera.x, camera.y);
-            }
-            else {
-              this.cameras.main.zoom = 1;
-              camera.x = canvas.width / 2;
-              camera.y = canvas.height / 2;
-              this.cameras.main.centerOn(camera.x, camera.y);
-            }
-          };
           this.input.on('wheel', (pointer, currentlyOver, dx, dy, dz, event) => {
             const zoom = this.cameras.main.zoom - pointer.deltaY / 500;
             const cameraXAdder = Math.sign(-pointer.deltaY) * (pointer.x - document.documentElement.clientWidth / 2) / 10;
             const cameraYAdder = Math.sign(-pointer.deltaY) * (pointer.y - document.documentElement.clientHeight / 2) / 10;
-            Zoom(zoom, cameraXAdder, cameraYAdder);
+            this.Zoom(zoom, cameraXAdder, cameraYAdder);
             // if (1 < zoom) {
             //   this.cameras.main.zoom = zoom;
             //   camera.x += Math.sign(-pointer.deltaY) * (pointer.x - document.documentElement.clientWidth / 2) / 10;
@@ -224,7 +230,10 @@
             // }
           });
         }
+
         create() {
+          const canvas = this.sys.game.canvas;
+
           const info = this.add.text(10, document.documentElement.clientHeight - 100, "", {font: `30px sans-serif`, fill: "#000"});
           const pinch = this.rexGestures.add.pinch();
           // this.pinch.on("drag1", pinch => console.log("drag1", pinch.pointers))
@@ -240,13 +249,12 @@
             const zoom = this.cameras.main.zoom + pinch.scaleFactor;
             const cameraXAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.x - document.documentElement.clientWidth / 2) / 10;
             const cameraYAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.y - document.documentElement.clientHeight / 2) / 10;
-            Zoom(zoom, cameraXAdder, cameraYAdder);
+            this.Zoom(zoom, cameraXAdder, cameraYAdder);
             info.text = pinch.scaleFactor + ": " + pinch.pointers.map(e => e.x + " " + e.y).join(", ");
           });
 
           const pieces = [];
           let connections = [];
-          const canvas = this.sys.game.canvas;
 
           for (let i = 0; i < 100; ++i) {
             const actualPieceSize = 230;
@@ -525,3 +533,5 @@
 		</script>
 	</body>
 </html>
+
+<!-- todo 画像表示の倍率を変える -->
