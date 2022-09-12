@@ -45,6 +45,13 @@
           const t = "ロード中";
           const fontSize = 20;
           this.loader = this.add.text((canvas.width - t.length * fontSize) / 2, canvas.height / 2, t, {font: `${fontSize}px sans-serif`, fill: "#ffffff"}).setDepth(10);
+          const f = () => {
+            this.loader.text = t + ".".repeat((this.loader.text.length - t.length + 1) % 4);
+            if (this.loader.visible) {
+              setTimeout(f, 500);
+            }
+          };
+          setTimeout(f, 500);
         }
         preload() {
           this.load.image("original0", "img/original0.png");
@@ -121,6 +128,13 @@
           const fontSize = 20;
           this.loader = this.add.text((canvas.width - t.length * fontSize) / 2, canvas.height / 2, t, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
           this.id = data.id;
+          const f = () => {
+            this.loader.text = t + ".".repeat((this.loader.text.length - t.length + 1) % 4);
+            if (this.loader.visible) {
+              setTimeout(f, 500);
+            }
+          };
+          setTimeout(f, 500);
         }
 
         preload() {
