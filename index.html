@@ -102,8 +102,6 @@
 
           footer.call(this, canvas);
           this.loader.visible = false;
-
-            // this.scene.start("Game", {id})
         }
         update() {
         }
@@ -240,7 +238,6 @@
                       return i !== i_ && !connections.some(e => e.includes(i + offset) && e.includes(i_)) && pieces[i + offset].depth < el.depth && Math.abs(pieces[i + offset].x - el.x) < diff && Math.abs(pieces[i + offset].y - el.y) < diff;
                     });
                     if (p) {
-                      console.log("here")
                       return;
                     }
                   }
