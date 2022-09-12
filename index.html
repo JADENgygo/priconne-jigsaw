@@ -20,19 +20,19 @@
 		<script>
       function footer(canvas) {
         const fontSize = 15;
-        this.add.rectangle(canvas.width / 2, canvas.height - fontSize, canvas.width, fontSize * 2, "0xffffff");
+        this.add.rectangle(canvas.width / 2, canvas.height - fontSize, canvas.width, fontSize * 2, "0xffffff").setDepth(-200);
 
-        const twitter = this.add.image(canvas.width / 20, canvas.height - fontSize, "twitter");
+        const twitter = this.add.image(canvas.width / 20, canvas.height - fontSize, "twitter").setDepth(-200);
         twitter.setInteractive().on("pointerdown", () => window.location.href = "https://twitter.com/JADENgygo");
-        this.add.line(twitter.x , twitter.y + twitter.height / 2, 0, 0, twitter.width, 0, 0x000).setLineWidth(0.5);
+        this.add.line(twitter.x , twitter.y + twitter.height / 2, 0, 0, twitter.width, 0, 0x000).setLineWidth(0.5).setDepth(-200);
 
         const toolText = "プリコネツール";
-        const tool = this.add.text(twitter.x + twitter.width + fontSize * 2, canvas.height - fontSize * 1.5, toolText, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
+        const tool = this.add.text(twitter.x + twitter.width + fontSize * 2, canvas.height - fontSize * 1.5, toolText, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(-200);
         tool.setInteractive().on("pointerdown", () => window.location.href = "https://priconne-portfolio.vercel.app");
-        this.add.line(tool.x + toolText.length * fontSize / 2, tool.y + fontSize, 0, 0, toolText.length * fontSize, 0, 0x000).setLineWidth(0.5);
+        this.add.line(tool.x + toolText.length * fontSize / 2, tool.y + fontSize, 0, 0, toolText.length * fontSize, 0, 0x000).setLineWidth(0.5).setDepth(-200);
 
         const copyrightText = "画像: © Cygames, Inc.";
-        this.add.text(tool.x + toolText.length * fontSize + fontSize * 2, canvas.height - fontSize * 1.5, copyrightText, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(10);
+        this.add.text(tool.x + toolText.length * fontSize + fontSize * 2, canvas.height - fontSize * 1.5, copyrightText, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(-200);
       }
 
       class Title extends Phaser.Scene {
@@ -103,7 +103,7 @@
           footer.call(this, canvas);
           this.loader.visible = false;
 
-            this.scene.start("Game", {id})
+            // this.scene.start("Game", {id})
         }
         update() {
         }
@@ -125,24 +125,6 @@
           this.id = data.id;
         }
 
-        cameraPosition = {x: 0, y: 0};
-
-        Zoom(zoom, cameraXAdder, cameraYAdder) {
-          const canvas = this.sys.game.canvas;
-          if (1 < zoom) {
-            this.cameras.main.zoom = zoom;
-            this.cameraPosition.x += cameraXAdder;
-            this.cameraPosition.y += cameraYAdder;
-            this.cameras.main.centerOn(this.cameraPosition.x, this.cameraPosition.y);
-          }
-          else {
-            this.cameras.main.zoom = 1;
-            this.cameraPosition.x = canvas.width / 2;
-            this.cameraPosition.y = canvas.height / 2;
-            this.cameras.main.centerOn(this.cameraPosition.x, this.cameraPosition.y);
-          }
-        }
-
         preload() {
           for (let i = 0; i < 100; ++i) {
             this.load.image("piece" + i, `img/piece_${this.id}_${i}.png`);
@@ -151,67 +133,13 @@
           this.load.image("original" + this.id, `img/original_${this.id}.png`);
           this.load.scenePlugin('rexgesturesplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexgesturesplugin.min.js', 'rexGestures', 'rexGestures');
 
-          this.cameraPosition.x = this.cameras.main.centerX;
-          this.cameraPosition.y = this.cameras.main.centerY;
           const preDragPosition = {x: 0, y: 0};
           const canvas = this.sys.game.canvas;
-          this.add.rectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, "0xffffff").setDepth(-200).setInteractive({draggable: true}).
-          on("dragstart", (pointer, dragX, dragY) => {
-            preDragPosition.x = pointer.x;
-            preDragPosition.y = pointer.y;
-          }).
-          on("drag", (pointer, dragX, dragY) => {
-            if (this.cameras.main.zoom === 1) {
-              return;
-            }
-            this.cameraPosition.x += preDragPosition.x - pointer.x;
-            this.cameraPosition.y += preDragPosition.y - pointer.y;
-            preDragPosition.x = pointer.x;
-            preDragPosition.y = pointer.y;
-            this.cameras.main.centerOn(this.cameraPosition.x, this.cameraPosition.y);
-          });
-
-          this.input.on('wheel', (pointer, currentlyOver, dx, dy, dz, event) => {
-            const zoom = this.cameras.main.zoom - pointer.deltaY / 500;
-            const cameraXAdder = Math.sign(-pointer.deltaY) * (pointer.x - document.documentElement.clientWidth / 2) / 10;
-            const cameraYAdder = Math.sign(-pointer.deltaY) * (pointer.y - document.documentElement.clientHeight / 2) / 10;
-            this.Zoom(zoom, cameraXAdder, cameraYAdder);
-
-            // this.cameras.main.zoom = Math.max(1, zoom);
-            // if (this.cameras.main.zoom === 1) {
-            //   this.cameraPosition.x = canvas.width / 2;
-            //   this.cameraPosition.y = canvas.height / 2;
-            //   this.cameras.main.centerOn(canvas.width / 2, canvas.height / 2);
-            // }
-          });
+          this.add.rectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, "0xffffff").setDepth(-300);
         }
 
         create() {
           const canvas = this.sys.game.canvas;
-          const pinchPosition = {x: 0, y: 0};
-          this.rexGestures.add.pinch().
-          on("pinchstart", pinch => {
-            pinchPosition.x = (pinch.pointers[0].x + pinch.pointers[1].x) / 2;
-            pinchPosition.y = (pinch.pointers[0].y + pinch.pointers[1].y) / 2;
-          }).
-          on("pinch", pinch => {
-            if (pinch.scaleFactor === 1) {
-              return;
-            }
-            const zoom = this.cameras.main.zoom + (pinch.scaleFactor - 1) / 1.5;
-            const cameraXAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.x - document.documentElement.clientWidth / 2) / 10;
-            const cameraYAdder = (1 < pinch.scaleFactor ? 1 : -1) * (pinchPosition.y - document.documentElement.clientHeight / 2) / 10;
-            console.log("cameraXAdder", cameraXAdder, "cameraYAdder", cameraYAdder, "pinchPosiiton.x", pinchPosition.x, "pinchPosition.y", pinchPosition.y, "clientWidth", document.documentElement.clientWidth, "clientHeight", document.documentElement.clientHeight);
-            this.Zoom(zoom, cameraXAdder, cameraYAdder);
-
-            // this.cameras.main.zoom = Math.max(1, zoom);
-            // if (this.cameras.main.zoom === 1) {
-            //   this.cameraPosition.x = canvas.width / 2;
-            //   this.cameraPosition.y = canvas.height / 2;
-            //   this.cameras.main.centerOn(canvas.width / 2, canvas.height / 2);
-            // }
-          });
-
           const pieces = [];
           let connections = [];
           let movedPiece = null;
@@ -307,11 +235,13 @@
                     }
                     break;
                   }
-                  const p = pieces.filter((_, i_) => i !== i_).find(e => {
-                    return pieces[i + offset].depth < e.depth && Math.abs(pieces[i + offset].x - e.x) < diff && Math.abs(pieces[i + offset].y - e.y) < diff;
-                  });
-                  if (p) {
-                    return;
+                  if (connections.every(e => !e.includes(i))) {
+                    const p = pieces.filter((_, i_) => i !== i_).find(e => {
+                      return pieces[i + offset].depth < e.depth && Math.abs(pieces[i + offset].x - e.x) < diff && Math.abs(pieces[i + offset].y - e.y) < diff;
+                    });
+                    if (p) {
+                      return;
+                    }
                   }
                   if (connections.some(e => e.includes(i) && e.includes(i + offset))) {
                     return;
@@ -412,7 +342,7 @@
           }
           const fontSize = 15;
           const backText = "パズル選択";
-          const back = this.add.text(canvas.width / 20, fontSize, backText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
+          const back = this.add.text(canvas.width / 20, fontSize, backText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(-200).setBackgroundColor("white");
           back.setInteractive().on("pointerdown", () => {
             for (let i = 0; i < 100; ++i) {
               this.textures.remove("piece" + i);
@@ -422,7 +352,7 @@
           });
 
           const showText = "元画像表示";
-          const show = this.add.text(back.x + (backText.length + 2) * fontSize, fontSize, showText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
+          const show = this.add.text(back.x + (backText.length + 2) * fontSize, fontSize, showText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(-200).setBackgroundColor("white");
           const actualSize = 1920;
           const scale = Math.min(canvas.width, canvas.height) / actualSize;
           const original = this.add.image(canvas.width / 2, canvas.height / 2, "original" + this.id).setScale(scale).setDepth(20).setVisible(false);
@@ -432,7 +362,7 @@
           });
 
           const saveText = "セーブ"
-          const save = this.add.text(show.x + (showText.length + 2) * fontSize, fontSize, saveText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white");
+          const save = this.add.text(show.x + (showText.length + 2) * fontSize, fontSize, saveText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(-200).setBackgroundColor("white");
           const sdt = "セーブしました";
           const saveDialogText = this.add.text((canvas.width - sdt.length * fontSize) / 2, canvas.height / 2, sdt, {font: `bold ${fontSize}px sans-serif`, fill: "#ffffff"}).setDepth(31).setVisible(false);
           const saveDialog = this.add.graphics().fillStyle(0x000, 1).fillRoundedRect(saveDialogText.x - fontSize, saveDialogText.y - fontSize, (sdt.length + 2) * fontSize, fontSize * 3, 16).setDepth(30).setVisible(false);
@@ -454,7 +384,7 @@
           });
 
           const loadText = "ロード";
-          this.add.text(save.x + (saveText.length + 2) * fontSize, fontSize, loadText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(30).setBackgroundColor("white").setInteractive().
+          this.add.text(save.x + (saveText.length + 2) * fontSize, fontSize, loadText, {font: `${fontSize}px sans-serif`, fill: "#000"}).setDepth(-200).setBackgroundColor("white").setInteractive().
           on("pointerdown", () => {
             const storage = localStorage;
             if (!storage.getItem(`piece_${this.id}_0_x`)) {
@@ -504,5 +434,3 @@
 		</script>
 	</body>
 </html>
-
-<!-- todo 画像表示の倍率を変える -->
