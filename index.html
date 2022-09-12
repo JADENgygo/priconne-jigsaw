@@ -237,7 +237,7 @@
                   }
                   if (connections.every(e => !e.includes(i))) {
                     const p = pieces.filter((_, i_) => i !== i_).find(e => {
-                      return !connections.some(e => e.inlucdes(i + offset) && e.inlucdes(e)) && pieces[i + offset].depth < e.depth && Math.abs(pieces[i + offset].x - e.x) < diff && Math.abs(pieces[i + offset].y - e.y) < diff;
+                      return !connections.some(e => e.includes(i + offset) && e.includes(e)) && pieces[i + offset].depth < e.depth && Math.abs(pieces[i + offset].x - e.x) < diff && Math.abs(pieces[i + offset].y - e.y) < diff;
                     });
                     if (p) {
                       return;
