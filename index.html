@@ -227,8 +227,8 @@
                     if (!elements.includes(i)) {
                       continue;
                     }
-                    const p = pieces.filter((_, i) => !elements.includes(i)).find(e => {
-                      return pieces[i + offset].depth < e.depth && Math.abs(pieces[i + offset].x - e.x) < diff && Math.abs(pieces[i + offset].y - e.y) < diff;
+                    const p = pieces.filter((_, i) => !elements.includes(i)).find((el, i_) => {
+                      return !connections.some(e => e.includes(i + offset) && e.includes(i_)) && pieces[i + offset].depth < el.depth && Math.abs(pieces[i + offset].x - el.x) < diff && Math.abs(pieces[i + offset].y - el.y) < diff;
                     });
                     if (p) {
                       return;
@@ -236,10 +236,11 @@
                     break;
                   }
                   if (connections.every(e => !e.includes(i))) {
-                    const p = pieces.filter((_, i_) => i !== i_).find(el => {
-                      return !connections.some(e => e.includes(i + offset) && e.includes(e)) && pieces[i + offset].depth < el.depth && Math.abs(pieces[i + offset].x - el.x) < diff && Math.abs(pieces[i + offset].y - el.y) < diff;
+                    const p = pieces.find((el, i_) => {
+                      return i !== i_ && !connections.some(e => e.includes(i + offset) && e.includes(i_)) && pieces[i + offset].depth < el.depth && Math.abs(pieces[i + offset].x - el.x) < diff && Math.abs(pieces[i + offset].y - el.y) < diff;
                     });
                     if (p) {
+                      console.log("here")
                       return;
                     }
                   }
