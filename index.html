@@ -64,9 +64,9 @@
           const originalSize = 1920;
           const scale = Math.min(canvas.width, canvas.height) / originalSize;
           const effectiveSize = originalSize * scale;
-          const original0 = this.add.image(effectiveSize / 2 + (canvas.width - effectiveSize) / 2, effectiveSize / 2 + (canvas.height - effectiveSize) / 2, "original0").setScale(scale);
-          const original1 = this.add.image(effectiveSize / 2 + (canvas.width - effectiveSize) / 2, effectiveSize / 2 + (canvas.height - effectiveSize) / 2, "original1").setScale(scale).setVisible(false);
-          const original2 = this.add.image(effectiveSize / 2 + (canvas.width - effectiveSize) / 2, effectiveSize / 2 + (canvas.height - effectiveSize) / 2, "original2").setScale(scale).setVisible(false);
+          const original0 = this.add.image(effectiveSize / 2 + (canvas.width - effectiveSize) / 2, effectiveSize / 2 + (canvas.height - effectiveSize) / 2, "original0").setScale(scale).setDepth(-300);
+          const original1 = this.add.image(effectiveSize / 2 + (canvas.width - effectiveSize) / 2, effectiveSize / 2 + (canvas.height - effectiveSize) / 2, "original1").setScale(scale).setVisible(false).setDepth(-300);
+          const original2 = this.add.image(effectiveSize / 2 + (canvas.width - effectiveSize) / 2, effectiveSize / 2 + (canvas.height - effectiveSize) / 2, "original2").setScale(scale).setVisible(false).setDepth(-300);
 
           const t = "プリコネジグソー";
           const fontSize = 30;
