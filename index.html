@@ -237,7 +237,7 @@
                   }
                   if (connections.every(e => !e.includes(i))) {
                     const p = pieces.filter((_, i_) => i !== i_).find(e => {
-                      return pieces[i + offset].depth < e.depth && Math.abs(pieces[i + offset].x - e.x) < diff && Math.abs(pieces[i + offset].y - e.y) < diff;
+                      return !connections.some(e => e.inlucdes(i + offset) && e.inlucdes(e)) && pieces[i + offset].depth < e.depth && Math.abs(pieces[i + offset].x - e.x) < diff && Math.abs(pieces[i + offset].y - e.y) < diff;
                     });
                     if (p) {
                       return;
@@ -332,8 +332,8 @@
                   depth++;
                 });
               });
-              piece.setDepth(depth);
               connect(i);
+              piece.setDepth(depth);
               Object.keys(shadow).map(key => shadow[key].destroy());
               movedPiece = null;
             });
