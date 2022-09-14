@@ -26,12 +26,12 @@
         twitter.setInteractive().on("pointerdown", () => window.location.href = "https://twitter.com/JADENgygo");
         this.add.line(twitter.x , twitter.y + twitter.height / 2, 0, 0, twitter.width, 0, 0x000).setLineWidth(0.5).setDepth(-200);
 
-        const toolText = "プリコネツール";
+        const toolText = "闇プリン開発室";
         const tool = this.add.text(twitter.x + twitter.width + fontSize * 2, canvas.height - fontSize * 1.5, toolText, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(-200);
         tool.setInteractive().on("pointerdown", () => window.location.href = "https://priconne-portfolio.vercel.app");
         this.add.line(tool.x + toolText.length * fontSize / 2, tool.y + fontSize, 0, 0, toolText.length * fontSize, 0, 0x000).setLineWidth(0.5).setDepth(-200);
 
-        const copyrightText = "画像: © Cygames, Inc.";
+        const copyrightText = "画像 © Cygames, Inc.";
         this.add.text(tool.x + toolText.length * fontSize + fontSize * 2, canvas.height - fontSize * 1.5, copyrightText, {font: `bold ${fontSize}px sans-serif`, fill: "#000"}).setDepth(-200);
       }
 
